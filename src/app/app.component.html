@@ -3,7 +3,7 @@
   <div class="card">
     <div class="card-header">
       <span>
-        <button class="btn btn-link" type="button" (click)="mainAccordion = 'bands'">
+        <button (click)="mainAccordion = 'bands'" class="btn btn-link" type="button">
           {{'Bands ' + activeBandsString()}}
         </button>
       </span>
@@ -12,7 +12,7 @@
       <div class="card-body">
         <div *ngIf="bands" class="btn-group btn-group-toggle flex-wrap d-flex">
           <label *ngFor="let band of bands" class="btn-secondary w-50" ngbButtonLabel>
-            <input type="checkbox" ngbButton [(ngModel)]="band.preselected"> {{ band.description || band.name }}
+            <input [(ngModel)]="band.preselected" ngbButton type="checkbox"> {{ band.description || band.name }}
           </label>
         </div>
       </div>
@@ -22,50 +22,62 @@
   <div class="card">
     <div class="card-header">
       <span class="pull-left">
-        <button class="btn btn-link" type="button" (click)="mainAccordion = 'pilots'">
+        <button (click)="mainAccordion = 'pilots'" class="btn btn-link" type="button">
           {{'Pilots (' + pilots.length + ')'}}
         </button>
       </span>
       <span class="pull-right">
-        <button class="btn btn-success" (click)="addPilot()">
+        <button (click)="addPilot()" class="btn btn-success">
         <fa name="plus"></fa>
       </button>
       </span>
     </div>
     <div [class.collapse]="mainAccordion != 'pilots'">
 
-      <div class="container" *ngIf="pilots">
+      <div *ngIf="pilots" class="container" style="padding-left: 0; padding-right: 0">
         <div *ngFor="let pilot of pilots; let i = index" class="card">
           <div class="card-header">
             <span>{{pilot.nickname}}</span>
-            <span class="pull-right"><button class="btn btn-danger" (click)="removePilot(pilot)"><fa name="minus"></fa></button></span>
+            <span class="pull-right"><button (click)="removePilot(pilot)" class="btn btn-danger"><fa name="minus"></fa></button></span>
           </div>
           <form>
             <div class="form-group">
               <label [for]="'pilot.nickname' + i">Nickname</label>
-              <input type="text" class="form-control"
-                     [id]="'pilot.nickname' + i"
+              <input [(ngModel)]="pilot.nickname" [id]="'pilot.nickname' + i"
                      [name]="'pilot.nickname' + i"
-                     [(ngModel)]="pilot.nickname">
+                     class="form-control"
+                     type="text">
             </div>
 
             <div class="form-group">
               <label [for]="'pilot.availableChannels' + i">Channels</label>
 
-              <div class="accordion" *ngIf="activeBands()">
+              <div *ngIf="activeBands()" class="accordion">
 
-                <div class="card" *ngFor="let band of activeBands()">
+                <div *ngFor="let band of activeBands()" class="card">
                   <div class="card-header">
                     <span class="pull-left">
-                      <button class="btn btn-link" type="button"
-                              (click)="subAccordion =  (subAccordion != ('pilot.availableChannels.' + i + '.' + band.id) ? 'pilot.availableChannels.' + i + '.' + band.id : null )">
-                        {{ ( band.description || band.name ) }}</button>
+                      <button
+                        (click)="subAccordion =  (subAccordion != ('pilot.availableChannels.' + i + '.' + band.id) ? 'pilot.availableChannels.' + i + '.' + band.id : null )"
+                        class="btn btn-link"
+                        type="button">
+                        {{ (band.description || band.name) }}</button>
+                    </span>
+                    <span class="pull-right">
+
+                      <button (click)="checkAll(pilot, band)" [ngClass]="isAllChecked(pilot, band) ? 'btn btn-dark' : 'btn btn-light'" class="btn btn-light"
+                              type="button">
+                        <fa [name]="isAllChecked(pilot, band) ? 'check-circle' : 'check-circle-o'"></fa>
+                      </button>
                     </span>
                   </div>
                   <div [class.collapse]="subAccordion != 'pilot.availableChannels.' + i + '.' + band.id">
                     <div *ngIf="band.channels" class="btn-group btn-group-toggle flex-wrap d-flex">
-                      <label *ngFor="let channel of band.channels" class="btn-info w-50" ngbButtonLabel>
-                        <input type="checkbox" ngbButton [value]="channel" (change)="onChannelSelectionChange(pilot, channel, $event)"> {{ channel.number + ' (' + channel.frequency + ')' }}
+                      <label *ngFor="let channelSelection of channelSelectionForBand(pilotChannelSelection.get(pilot), band)" class="btn-info w-50" ngbButtonLabel>
+                        <input [(ngModel)]="channelSelection.selected"
+                               [ngModelOptions]="{standalone: true}"
+                               [value]="channelSelection.channel"
+                               ngbButton type="checkbox"> {{ channelSelection.channel.number + ' (' + channelSelection.channel.frequency + ')' }}
                       </label>
                     </div>
                   </div>
@@ -82,13 +94,63 @@
   <div class="card">
     <div class="card-header" id="panel-results">
       <span>
-        <button class="btn btn-link" type="button" (click)="mainAccordion = 'results'">
+        <button (click)="mainAccordion = 'results'" class="btn btn-link" type="button">
           Results
         </button>
       </span>
+      <span class="pull-right">
+        <button (click)="execute()" class="btn btn-warning">
+          <fa name="check"></fa>
+        </button>
+      </span>
     </div>
-    <div id="collapseResults" [class.collapse]="mainAccordion != 'results'">
-      TODO
+    <div [class.collapse]="mainAccordion != 'results'" id="collapseResults">
+      <!--<div *ngIf="recommendations" class="container" style="padding-left: 0; padding-right: 0">-->
+      <!--<div *ngFor="let recommendation of recommendations; let i = index" class="card">-->
+      <!--<div class="container">-->
+      <!---->
+      <!--</div>-->
+      <!--</div>-->
+      <!--</div>-->
+
+
+
+      <div *ngIf="recommendations">
+        <!--<ngb-carousel *ngIf="recommendations"  >-->
+
+        <!--<div *ngFor="let recommendation of recommendations;">-->
+        <div class="container bg-secondary text-light" style="padding-bottom: 50px">
+          <div class="row">
+            <div class="col">
+              <span>Min ch separation:</span>
+            </div>
+            <div class="col-4">
+              <span>{{recommendations[page - 1].result.minimumSeparationChannel}}MHz</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <span>Min Ch-IMD separation:</span>
+            </div>
+            <div class="col-4">
+              <span>{{recommendations[page - 1].result.minimumSeparationImd}}MHz</span>
+            </div>
+          </div>
+          <div *ngFor="let pilot of recommendations[page - 1].pilots" class="row">
+            <div class="col">
+              <span>{{pilot.nickname}}</span>
+            </div>
+            <div class="col-4">
+              <span>{{pilot.recommendedChannel.band.name}}{{pilot.recommendedChannel.number}} ({{pilot.recommendedChannel.frequency}}MHz)</span>
+            </div>
+          </div>
+        </div>
+        <!--</div>-->
+        <!--</ngb-carousel>-->
+
+        <ngb-pagination class="d-flex justify-content-center" [collectionSize]="recommendations.length" [(page)]="page" [pageSize]="1" [maxSize]="5" [rotate]="true"></ngb-pagination>
+      </div>
+
     </div>
   </div>
 </div>

@@ -3,7 +3,9 @@ import {BandService} from './service/band.service';
 import {Band} from './data/band';
 import {Pilot} from './data/pilot';
 import {isNullOrUndefined} from 'util';
-import {Channel} from './data/channel';
+import {ChannelSelection} from './data/channel-selection';
+import {RecommendationServiceService} from './service/recommendation-service.service';
+import {RecommendationResult} from './data/recommendation-result';
 
 @Component({
   selector: 'app-root',
@@ -12,30 +14,38 @@ import {Channel} from './data/channel';
 })
 export class AppComponent implements OnInit {
 
-  private bands: Array<Band>;
-
-  private pilots: Array<Pilot> = [];
-
-  private pilotNumber: number = 1;
-
-  public mainAccordion: string = 'pilots';
+  public mainAccordion = 'pilots';
 
   public subAccordion: string;
 
-  constructor(private bandService: BandService) {
+  public bands: Array<Band>;
+
+  public pilots: Array<Pilot> = [];
+
+  public pilotChannelSelection = new Map<Pilot, Array<ChannelSelection>>();
+
+  public recommendations: Array<RecommendationResult>;
+
+  public page = 0;
+
+  private pilotNumber = 1;
+
+
+  constructor(private bandService: BandService,
+              private recommendationService: RecommendationServiceService) {
   }
 
   ngOnInit(): void {
-    this.bandService.readAllBands().subscribe(bandsResponse => {
-      if (bandsResponse.status === 0) {
-        this.bands = bandsResponse.data.map(band => {
+    this.bandService.readAllBands().subscribe(response => {
+      if (response.status === 0) {
+        this.bands = response.data;
+        this.bands.forEach(band => {
           band.channels.forEach(channel => {
             channel.band = band;
           });
-          return band;
         });
       } else {
-        console.log('No bands ' + bandsResponse.message);
+        console.log('No bands ' + response.message);
       }
     });
   }
@@ -49,8 +59,7 @@ export class AppComponent implements OnInit {
   activeBandsString(): string {
     if (isNullOrUndefined(this.bands)) {
       return '';
-    }
-    else {
+    } else {
       return '(' + this.bands
         .filter(band => {
           return band.preselected;
@@ -62,31 +71,61 @@ export class AppComponent implements OnInit {
   }
 
   addPilot(): void {
-    let pilot = new Pilot();
-    pilot.nickname = 'Pilot ' + (this.pilotNumber++);
-    this.pilots.push(pilot);
+    if (this.pilots.length <= 6) {
+      const pilot = new Pilot();
+      pilot.nickname = 'Pilot ' + (this.pilotNumber++);
+
+      this.pilotChannelSelection.set(pilot, []);
+
+      this.bands.filter(band => {
+        return band.preselected;
+      }).forEach(band => {
+        band.channels.forEach(channel => {
+          this.pilotChannelSelection.get(pilot).push(new ChannelSelection(channel, band));
+        });
+      });
+
+      this.pilots.push(pilot);
+    }
   }
 
   removePilot(pilot: Pilot) {
-    let index = this.pilots.indexOf(pilot);
+    const index = this.pilots.indexOf(pilot);
     if (index > -1) {
-      this.pilots.splice(index, 1);
+      this.pilots = this.pilots.splice(index, 1);
     }
   }
 
-  onChannelSelectionChange(pilot: Pilot, channel: Channel, event) {
-    if (isNullOrUndefined(pilot.availableChannels)){
-      pilot.availableChannels = []
-    }
+  channelSelectionForBand(all: Array<ChannelSelection>, band: Band): Array<ChannelSelection> {
+    return all.filter(value => value.band.id === band.id);
+  }
 
-    if (event.target.checked) {
-      pilot.availableChannels.push(channel)
-    }
-    else {
-      let index = pilot.availableChannels.indexOf(channel);
-      if (index > -1) {
-        pilot.availableChannels.splice(index, 1);
+  isAllChecked(pilot: Pilot, band: Band): boolean {
+    return this.pilotChannelSelection.get(pilot).filter(value => value.band.id === band.id).every(value => value.selected);
+  }
+
+  checkAll(pilot: Pilot, band: Band) {
+    const areChecked = this.isAllChecked(pilot, band);
+    this.pilotChannelSelection.get(pilot).filter(value => value.band.id === band.id).forEach(value => {
+      value.selected = !areChecked;
+    });
+  }
+
+  execute() {
+    this.recommendations = null;
+    this.page = 0;
+
+    this.pilots.forEach(pilot => {
+      pilot.availableChannels = this.pilotChannelSelection.get(pilot).filter(c => c.selected).map(c => c.channel);
+    });
+
+    this.recommendationService.getRecommendations(this.pilots).subscribe(value => {
+      console.log(value);
+      if (value.status === 0) {
+        this.recommendations = value.data;
+        this.page = 1;
+        this.mainAccordion = 'results';
       }
-    }
+    });
   }
 }
