@@ -6,6 +6,9 @@ import {isNullOrUndefined} from 'util';
 import {ChannelSelection} from './data/channel-selection';
 import {RecommendationServiceService} from './service/recommendation-service.service';
 import {RecommendationResult} from './data/recommendation-result';
+import {NgxSpinnerService} from 'ngx-spinner';
+import {Alert} from './data/alert';
+import {e} from '@angular/core/src/render3';
 
 @Component({
   selector: 'app-root',
@@ -28,14 +31,20 @@ export class AppComponent implements OnInit {
 
   public page = 0;
 
+  public processing = false;
+
+  public alerts: Array<Alert> = [];
+
   private pilotNumber = 1;
 
 
   constructor(private bandService: BandService,
-              private recommendationService: RecommendationServiceService) {
+              private recommendationService: RecommendationServiceService,
+              private spinner: NgxSpinnerService) {
   }
 
   ngOnInit(): void {
+    this.spinner.show();
     this.bandService.readAllBands().subscribe(response => {
       if (response.status === 0) {
         this.bands = response.data;
@@ -45,8 +54,12 @@ export class AppComponent implements OnInit {
           });
         });
       } else {
-        console.log('No bands ' + response.message);
+        this.showAlert('No data received from server', 'warning', 2000);
       }
+      this.spinner.hide();
+    }, error => {
+      this.showAlert('No data received from server', 'warning', 2000);
+      this.spinner.hide();
     });
   }
 
@@ -92,7 +105,7 @@ export class AppComponent implements OnInit {
   removePilot(pilot: Pilot) {
     const index = this.pilots.indexOf(pilot);
     if (index > -1) {
-      this.pilots = this.pilots.splice(index, 1);
+      this.pilots.splice(index, 1);
     }
   }
 
@@ -112,20 +125,67 @@ export class AppComponent implements OnInit {
   }
 
   execute() {
+    this.processing = true;
     this.recommendations = null;
     this.page = 0;
+
+    if (isNullOrUndefined(this.pilots) || this.pilots.length < 2) {
+      this.showAlert('You need at least two pilots', 'danger');
+    }
+
+    this.pilots.forEach(pilot => {
+      if (isNullOrUndefined(this.pilotChannelSelection.get(pilot)) || this.pilotChannelSelection.get(pilot).length < 1) {
+        this.showAlert(pilot.nickname + ' has to have at least one channel', 'danger');
+      }
+    });
+
+    if (this.alerts.length > 0) {
+      this.processing = false;
+      return;
+    }
 
     this.pilots.forEach(pilot => {
       pilot.availableChannels = this.pilotChannelSelection.get(pilot).filter(c => c.selected).map(c => c.channel);
     });
 
+    this.spinner.show();
     this.recommendationService.getRecommendations(this.pilots).subscribe(value => {
-      console.log(value);
+      // this.spinner.hide();
       if (value.status === 0) {
         this.recommendations = value.data;
         this.page = 1;
         this.mainAccordion = 'results';
+      } else {
+        this.recommendations = [];
+        this.page = 0;
+        this.mainAccordion = 'pilots';
+        this.showAlert('Could not find recommendation', 'info', 5000);
       }
+      this.spinner.hide();
+      this.processing = false;
+    }, error => {
+      this.processing = false;
+      this.showAlert('No data received from server', 'warning', 2000);
+      this.spinner.hide();
     });
+  }
+
+  close(alert: Alert) {
+    const index = this.alerts.indexOf(alert);
+    if (index > -1) {
+      this.alerts.splice(index, 1);
+    }
+  }
+
+  private showAlert(message: string, type: string = 'warning', timeout: number = 5000) {
+    const e = new Alert(message, type);
+
+    if (this.alerts.filter(a => a.text === message).length === 0) {
+      this.alerts.push(e);
+      setTimeout(() => {
+        this.close(e);
+      }, timeout);
+
+    }
   }
 }

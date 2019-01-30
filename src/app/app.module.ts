@@ -9,6 +9,7 @@ import {BandService} from './service/band.service';
 import {FormsModule} from '@angular/forms';
 import {AngularFontAwesomeModule} from 'angular-font-awesome';
 import {RecommendationServiceService} from './service/recommendation-service.service';
+import {NgxSpinnerModule} from 'ngx-spinner';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import {RecommendationServiceService} from './service/recommendation-service.ser
     NgbModule.forRoot(),
     HttpClientModule,
     FormsModule,
-    AngularFontAwesomeModule
+    AngularFontAwesomeModule,
+    NgxSpinnerModule
   ],
   providers: [BandService, RecommendationServiceService],
   bootstrap: [AppComponent]
