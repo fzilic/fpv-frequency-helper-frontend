@@ -134,7 +134,8 @@ export class AppComponent implements OnInit {
     }
 
     this.pilots.forEach(pilot => {
-      if (isNullOrUndefined(this.pilotChannelSelection.get(pilot)) || this.pilotChannelSelection.get(pilot).length < 1) {
+      if (isNullOrUndefined(this.pilotChannelSelection.get(pilot))
+        || this.pilotChannelSelection.get(pilot).filter(c => c.selected).length < 1) {
         this.showAlert(pilot.nickname + ' has to have at least one channel', 'danger');
       }
     });
