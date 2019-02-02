@@ -35,6 +35,8 @@ export class AppComponent implements OnInit {
 
   public alerts: Array<Alert> = [];
 
+  public showHelp = false;
+
   private pilotNumber = 1;
 
 

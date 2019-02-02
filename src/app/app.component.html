@@ -1,10 +1,20 @@
+<div class="container">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#" routerLink="/">FPV Frequency</a>
+    <button class="btn btn-info" (click)="showHelp = !showHelp">
+      Usage
+    </button>
+  </nav>
+</div>
+
+
 <div class="fixed-top" style="margin-top: 60px;">
-  <div *ngFor="let alert of alerts" >
+  <div *ngFor="let alert of alerts">
     <ngb-alert [type]="alert.type" (close)="close(alert)" style="margin-bottom: 5px">{{alert.text}}</ngb-alert>
   </div>
 </div>
 
-<div class="accordion">
+<div class="accordion" [hidden]="showHelp">
   <ngx-spinner></ngx-spinner>
 
   <div class="card">
@@ -45,7 +55,8 @@
         <div *ngFor="let pilot of pilots; let i = index" class="card">
           <div class="card-header">
             <span>{{pilot.nickname}}</span>
-            <span class="pull-right"><button [id]="'pilot.nickname' + i"  (click)="removePilot(pilot)" class="btn btn-danger"><fa name="minus"></fa></button></span>
+            <span class="pull-right"><button [id]="'pilot.nickname' + i" (click)="removePilot(pilot)"
+                                             class="btn btn-danger"><fa name="minus"></fa></button></span>
           </div>
           <form>
             <div class="form-group" style="padding-left: 5px;">
@@ -72,7 +83,9 @@
                     </span>
                     <span class="pull-right">
 
-                      <button (click)="checkAll(pilot, band)" [ngClass]="isAllChecked(pilot, band) ? 'btn btn-dark' : 'btn btn-light'" class="btn btn-light"
+                      <button (click)="checkAll(pilot, band)"
+                              [ngClass]="isAllChecked(pilot, band) ? 'btn btn-dark' : 'btn btn-light'"
+                              class="btn btn-light"
                               type="button">
                         <fa [name]="isAllChecked(pilot, band) ? 'check-circle' : 'check-circle-o'"></fa>
                       </button>
@@ -80,11 +93,14 @@
                   </div>
                   <div [class.collapse]="subAccordion != 'pilot.availableChannels.' + i + '.' + band.id">
                     <div *ngIf="band.channels" class="btn-group btn-group-toggle flex-wrap d-flex">
-                      <label *ngFor="let channelSelection of channelSelectionForBand(pilotChannelSelection.get(pilot), band)" class="btn-info w-50" ngbButtonLabel>
+                      <label
+                        *ngFor="let channelSelection of channelSelectionForBand(pilotChannelSelection.get(pilot), band)"
+                        class="btn-info w-50" ngbButtonLabel>
                         <input [(ngModel)]="channelSelection.selected"
                                [ngModelOptions]="{standalone: true}"
                                [value]="channelSelection.channel"
-                               ngbButton type="checkbox"> {{ channelSelection.channel.number + ' (' + channelSelection.channel.frequency + ')' }}
+                               ngbButton
+                               type="checkbox"> {{ channelSelection.channel.number + ' (' + channelSelection.channel.frequency + ')' }}
                       </label>
                     </div>
                   </div>
@@ -106,7 +122,7 @@
         </button>
       </span>
       <span class="pull-right">
-        <button (click)="execute()" class="btn btn-warning" [disabled]="processing" >
+        <button (click)="execute()" class="btn btn-warning" [disabled]="processing">
           <fa name="check"></fa>
         </button>
       </span>
@@ -133,26 +149,33 @@
             </div>
           </div>
           <!--<div class="row">-->
-            <!--<div class="col">-->
-              <!--<span>Channels:</span>-->
-            <!--</div>-->
-            <!--<div class="col-8 text-right">-->
-              <!--<span>{{channels(recommendations[page -1].result.channels)}}</span>-->
-            <!--</div>-->
+          <!--<div class="col">-->
+          <!--<span>Channels:</span>-->
+          <!--</div>-->
+          <!--<div class="col-8 text-right">-->
+          <!--<span>{{channels(recommendations[page -1].result.channels)}}</span>-->
+          <!--</div>-->
           <!--</div>-->
           <div *ngFor="let pilot of recommendations[page - 1].pilots" class="row">
             <div class="col">
               <span>{{pilot.nickname}}</span>
             </div>
             <div class="col-6 text-right">
-              <span>{{pilot.recommendedChannel.band.name}}{{pilot.recommendedChannel.number}} ({{pilot.recommendedChannel.frequency}}MHz)</span>
+              <span>{{pilot.recommendedChannel.band.name}}{{pilot.recommendedChannel.number}}
+                ({{pilot.recommendedChannel.frequency}}MHz)</span>
             </div>
           </div>
         </div>
 
-        <ngb-pagination class="d-flex justify-content-center" [collectionSize]="recommendations.length" [(page)]="page" [pageSize]="1" [maxSize]="5" [rotate]="true"></ngb-pagination>
+        <ngb-pagination class="d-flex justify-content-center" [collectionSize]="recommendations.length" [(page)]="page"
+                        [pageSize]="1" [maxSize]="5" [rotate]="true"></ngb-pagination>
       </div>
 
     </div>
   </div>
+</div>
+
+<div class="container" [hidden]="!showHelp">
+
+  <app-help></app-help>
 </div>

@@ -10,11 +10,13 @@ import {FormsModule} from '@angular/forms';
 import {AngularFontAwesomeModule} from 'angular-font-awesome';
 import {RecommendationServiceService} from './service/recommendation-service.service';
 import {NgxSpinnerModule} from 'ngx-spinner';
+import {HelpComponent} from './help/help.component';
 
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    HelpComponent
   ],
   imports: [
     BrowserModule,
