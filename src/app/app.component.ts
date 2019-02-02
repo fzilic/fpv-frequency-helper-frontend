@@ -8,7 +8,7 @@ import {RecommendationServiceService} from './service/recommendation-service.ser
 import {RecommendationResult} from './data/recommendation-result';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {Alert} from './data/alert';
-import {e} from '@angular/core/src/render3';
+import {Channel} from './data/channel';
 
 @Component({
   selector: 'app-root',
@@ -189,4 +189,8 @@ export class AppComponent implements OnInit {
 
     }
   }
+
+  // channels(channels: Array<Channel>): string {
+  //   return channels.map(c => c.band.name + c.number + '(' + c.frequency + 'MHz)').join(', ');
+  // }
 }

@@ -132,11 +132,19 @@
               <span>{{recommendations[page - 1].result.minimumSeparationImd}}MHz</span>
             </div>
           </div>
+          <!--<div class="row">-->
+            <!--<div class="col">-->
+              <!--<span>Channels:</span>-->
+            <!--</div>-->
+            <!--<div class="col-8 text-right">-->
+              <!--<span>{{channels(recommendations[page -1].result.channels)}}</span>-->
+            <!--</div>-->
+          <!--</div>-->
           <div *ngFor="let pilot of recommendations[page - 1].pilots" class="row">
             <div class="col">
               <span>{{pilot.nickname}}</span>
             </div>
-            <div class="col-4">
+            <div class="col-6 text-right">
               <span>{{pilot.recommendedChannel.band.name}}{{pilot.recommendedChannel.number}} ({{pilot.recommendedChannel.frequency}}MHz)</span>
             </div>
           </div>
