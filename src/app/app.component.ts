@@ -86,7 +86,7 @@ export class AppComponent implements OnInit {
   }
 
   addPilot(): void {
-    if (this.pilots.length <= 6) {
+    if (this.pilots.length < 6) {
       const pilot = new Pilot();
       pilot.nickname = 'Pilot ' + (this.pilotNumber++);
 
