@@ -8,7 +8,6 @@ import {RecommendationServiceService} from './service/recommendation-service.ser
 import {RecommendationResult} from './data/recommendation-result';
 import {NgxSpinnerService} from 'ngx-spinner';
 import {Alert} from './data/alert';
-import {Channel} from './data/channel';
 
 @Component({
   selector: 'app-root',
@@ -192,7 +191,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  // channels(channels: Array<Channel>): string {
-  //   return channels.map(c => c.band.name + c.number + '(' + c.frequency + 'MHz)').join(', ');
-  // }
+  updatePilotMaximumSeparation(pilot: Pilot) {
+    this.pilots.filter(p => p !== pilot).forEach(p => p.preferMaximumSeparationFromOthers = false);
+    pilot.preferMaximumSeparationFromOthers = !pilot.preferMaximumSeparationFromOthers;
+  }
 }

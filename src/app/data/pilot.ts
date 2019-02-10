@@ -8,4 +8,7 @@ export class Pilot {
 
   recommendedChannel: Channel;
 
+  preferMaximumSeparationFromOthers: boolean;
+
+  minimumSeparationFromOthers: number;
 }
